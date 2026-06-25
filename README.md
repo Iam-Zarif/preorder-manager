@@ -1,36 +1,183 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Preorder Manager
 
-## Getting Started
+## API
 
-First, run the development server:
+### List preorders
+**GET** `/api/preorders`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Query params**
+- `page` (number, default `1`)
+- `limit` (number, default `10`, max `50`)
+- `status` (`"active"` | `"inactive"`) — optional
+- `sortBy` (`"name" | "products" | "createdAt" | "startsAt" | "endsAt"`) — default `"createdAt"`
+- `order` (`"asc"` | `"desc"`) — default `"desc"`
+
+**Response (200)**
+```ts
+{
+  success: true;
+  data: Preorder[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Response (error)**
+- (not explicitly handled beyond Prisma/server errors)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Create preorder
+**POST** `/api/preorders`
 
-## Learn More
+**req.body**
+```ts
+{
+  name: string; // min length 1
+  products: number; // int >= 1
+  preorderWhen: "OUT_OF_STOCK" | "REGARDLESS_OF_STOCK";
+  startsAt: string; // date-time string (parsed with new Date)
+  endsAt?: string | null; // optional; if provided, parsed with new Date
+  status: boolean; // default true
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+**Response (200)**
+```ts
+{
+  success: true;
+  data: Preorder;
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Response (400)**
+```ts
+{ success: false; message: "Invalid preorder data" }
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### Get preorder by id
+**GET** `/api/preorders/:id`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Response (200)**
+```ts
+{ success: true; data: Preorder }
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Response (404)**
+```ts
+{ success: false; message: "Preorder not found" }
+```
+
+---
+
+### Update preorder
+**PUT** `/api/preorders/:id`
+
+**req.body**
+```ts
+{
+  name: string;
+  products: number;
+  preorderWhen: "OUT_OF_STOCK" | "REGARDLESS_OF_STOCK";
+  startsAt: string; // parsed with new Date
+  endsAt?: string | null;
+  status: boolean;
+}
+```
+
+**Response (200)**
+```ts
+{ success: true; data: Preorder }
+```
+
+**Response (400)**
+```ts
+{ success: false; message: "Invalid preorder data" }
+```
+
+---
+
+### Delete preorder
+**DELETE** `/api/preorders/:id`
+
+**Response (200)**
+```ts
+{ success: true }
+```
+
+**Response (500)**
+```ts
+{ success: false; message: "Unable to delete preorder" }
+```
+
+---
+
+### Toggle preorder status
+**PATCH** `/api/preorders/status/:id`
+
+**Response (200)**
+```ts
+{ success: true; data: Preorder }
+```
+
+**Response (404)**
+```ts
+{ success: false; message: "Preorder not found" }
+```
+
+---
+
+## Types
+
+### Preorder
+```ts
+type Preorder = {
+  id: string;
+  name: string;
+  products: number;
+  preorderWhen: "OUT_OF_STOCK" | "REGARDLESS_OF_STOCK";
+  startsAt: string; // serialized from DateTime
+  endsAt: string | null; // nullable
+  status: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+```
+
+### Preorder list response
+```ts
+type PreorderListResponse = {
+  success: boolean;
+  data: Preorder[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+};
+```
+
+## Frontend / UI
+
+- **Home (`/`)**: preorder list page (`PreorderListPage`).
+- **Create (`/preorders/new`)**: preorder form page (`PreorderFormPage`).
+- **Edit (`/preorders/:id/edit`)**: loads preorder by id and renders `PreorderFormPage`.
+
+### Data fetching
+- `usePreorders` calls:
+  - `GET /api/preorders?...` for list + filtering/sorting/pagination
+  - `DELETE /api/preorders/:id` for deletion
+  - `PATCH /api/preorders/status/:id` for toggling active/inactive
+
+### Form submission
+- `PreorderFormPage` submits:
+  - `POST /api/preorders` (new)
+  - `PUT /api/preorders/:id` (edit)
+
