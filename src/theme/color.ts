@@ -1,0 +1,15 @@
+export const colors = {
+  page: "#f4f4f4",
+  surface: "#ffffff",
+  surfaceMuted: "#f7f7f7",
+  line: "#dedede",
+  lineLight: "#e9e9e9",
+  text: "#202124",
+  textMuted: "#5f6b85",
+  heading: "#101828",
+  button: "#1f2023",
+  buttonText: "#ffffff",
+  activeTab: "#eeeeee",
+  inactiveSwitch: "#e1e4e8",
+  danger: "#b42318",
+} as const;

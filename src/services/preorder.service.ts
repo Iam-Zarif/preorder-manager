@@ -1,16 +1,32 @@
+import type {
+  PreorderListResponse,
+  PreorderPayload,
+  PreorderResponse,
+} from "@/src/types/preorder";
+
 const BASE_URL = "/api/preorders";
+
+async function readJson<T>(res: Response): Promise<T> {
+  const data = await res.json();
+
+  if (!res.ok || data.success === false) {
+    throw new Error(data.message || "Request failed");
+  }
+
+  return data;
+}
 
 export async function getPreorders(params: string = "") {
   const res = await fetch(`${BASE_URL}${params}`);
-  return res.json();
+  return readJson<PreorderListResponse>(res);
 }
 
 export async function getPreorderById(id: string) {
   const res = await fetch(`${BASE_URL}/${id}`);
-  return res.json();
+  return readJson<PreorderResponse>(res);
 }
 
-export async function createPreorder(data: any) {
+export async function createPreorder(data: PreorderPayload) {
   const res = await fetch(BASE_URL, {
     method: "POST",
     headers: {
@@ -19,10 +35,10 @@ export async function createPreorder(data: any) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  return readJson<PreorderResponse>(res);
 }
 
-export async function updatePreorder(id: string, data: any) {
+export async function updatePreorder(id: string, data: PreorderPayload) {
   const res = await fetch(`${BASE_URL}/${id}`, {
     method: "PUT",
     headers: {
@@ -31,7 +47,7 @@ export async function updatePreorder(id: string, data: any) {
     body: JSON.stringify(data),
   });
 
-  return res.json();
+  return readJson<PreorderResponse>(res);
 }
 
 export async function deletePreorder(id: string) {
@@ -39,7 +55,7 @@ export async function deletePreorder(id: string) {
     method: "DELETE",
   });
 
-  return res.json();
+  return readJson<{ success: boolean }>(res);
 }
 
 export async function togglePreorderStatus(id: string) {
@@ -47,5 +63,5 @@ export async function togglePreorderStatus(id: string) {
     method: "PATCH",
   });
 
-  return res.json();
+  return readJson<PreorderResponse>(res);
 }

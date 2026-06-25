@@ -1,4 +1,5 @@
-import { prisma } from "@/src/lib/prisma";
+import { getPrisma } from "@/src/lib/prisma";
+import { preorderInputSchema } from "@/src/lib/validations/preorder";
 import { NextResponse } from "next/server";
 
 const allowedSortFields = [
@@ -6,9 +7,11 @@ const allowedSortFields = [
   "products",
   "createdAt",
   "startsAt",
+  "endsAt",
 ] as const;
 
 export async function GET(req: Request) {
+  const prisma = getPrisma();
   const { searchParams } = new URL(req.url);
 
   const status = searchParams.get("status");
@@ -22,11 +25,13 @@ export async function GET(req: Request) {
   const sortByRaw = searchParams.get("sortBy") || "createdAt";
   const order = searchParams.get("order") === "asc" ? "asc" : "desc";
 
-  const safeSortBy = allowedSortFields.includes(sortByRaw as any)
+  const safeSortBy = allowedSortFields.includes(
+    sortByRaw as (typeof allowedSortFields)[number],
+  )
     ? sortByRaw
     : "createdAt";
 
-  const where: any = {};
+  const where: { status?: boolean } = {};
 
   if (status === "active") where.status = true;
   if (status === "inactive") where.status = false;
@@ -56,16 +61,24 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json();
+  const prisma = getPrisma();
+  const body = preorderInputSchema.safeParse(await req.json());
+
+  if (!body.success) {
+    return NextResponse.json(
+      { success: false, message: "Invalid preorder data" },
+      { status: 400 },
+    );
+  }
 
   const created = await prisma.preorder.create({
     data: {
-      name: body.name,
-      products: Number(body.products),
-      preorderWhen: body.preorderWhen,
-      startsAt: new Date(body.startsAt),
-      endsAt: body.endsAt ? new Date(body.endsAt) : null,
-      status: body.status ?? true,
+      name: body.data.name,
+      products: body.data.products,
+      preorderWhen: body.data.preorderWhen,
+      startsAt: new Date(body.data.startsAt),
+      endsAt: body.data.endsAt ? new Date(body.data.endsAt) : null,
+      status: body.data.status,
     },
   });
 

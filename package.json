@@ -7,10 +7,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "jiti src/script.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "jiti src/script.ts"
   },
   "dependencies": {
     "@faker-js/faker": "github:faker-js/faker",

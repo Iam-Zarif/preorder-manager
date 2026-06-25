@@ -1,47 +1,54 @@
-import { PreorderWhen } from "@/generated/prisma/enums";
-import { prisma } from "@/src/lib/prisma";
+import { getPrisma } from "@/src/lib/prisma";
+import { preorderInputSchema } from "@/src/lib/validations/preorder";
 import { NextResponse } from "next/server";
 
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  const data = await prisma.preorder.findUnique({
-    where: { id: params.id },
-  });
+export async function GET(_req: Request, { params }: Context) {
+  const { id } = await params;
+  const preorder = await getPrisma().preorder.findUnique({ where: { id } });
 
-  return NextResponse.json(data);
+  if (!preorder) {
+    return NextResponse.json(
+      { success: false, message: "Preorder not found" },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({ success: true, data: preorder });
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  const body = await req.json();
+export async function PUT(req: Request, { params }: Context) {
+  const { id } = await params;
+  const body = preorderInputSchema.safeParse(await req.json());
 
-  const updated = await prisma.preorder.update({
-    where: { id: params.id },
+  if (!body.success) {
+    return NextResponse.json(
+      { success: false, message: "Invalid preorder data" },
+      { status: 400 },
+    );
+  }
+
+  const updated = await getPrisma().preorder.update({
+    where: { id },
     data: {
-      name: body.name,
-      products: Number(body.products),
-      preorderWhen: body.preorderWhen as "OUT_OF_STOCK" | "REGARDLESS_OF_STOCK",
-      startsAt: new Date(body.startsAt),
-      endsAt: body.endsAt ? new Date(body.endsAt) : null,
-      status: body.status,
+      name: body.data.name,
+      products: body.data.products,
+      preorderWhen: body.data.preorderWhen,
+      startsAt: new Date(body.data.startsAt),
+      endsAt: body.data.endsAt ? new Date(body.data.endsAt) : null,
+      status: body.data.status,
     },
   });
 
-  return NextResponse.json(updated);
+  return NextResponse.json({ success: true, data: updated });
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  await prisma.preorder.delete({
-    where: { id: params.id },
-  });
+export async function DELETE(_req: Request, { params }: Context) {
+  const { id } = await params;
+  await getPrisma().preorder.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }

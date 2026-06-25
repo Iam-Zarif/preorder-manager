@@ -1,4 +1,8 @@
-import { prisma } from "./lib/prisma";
+#!/usr/bin/env -S node node_modules/.bin/jiti
+
+import { getPrisma } from "./lib/prisma";
+
+const prisma = getPrisma();
 
 
 async function main() {

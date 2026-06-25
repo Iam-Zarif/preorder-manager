@@ -1,7 +1,5 @@
-import Image from "next/image";
+import { PreorderListPage } from "@/src/components/preorders/PreorderListPage";
 
 export default function Home() {
-  return (
-  <></>
-  );
+  return <PreorderListPage />;
 }

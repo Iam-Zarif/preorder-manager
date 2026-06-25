@@ -1,28 +1,26 @@
-import { prisma } from "@/src/lib/prisma";
+import { getPrisma } from "@/src/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
-  const existing = await prisma.preorder.findUnique({
-    where: { id: params.id },
-  });
+type Context = {
+  params: Promise<{ id: string }>;
+};
 
-  if (!existing) {
+export async function PATCH(_req: Request, { params }: Context) {
+  const { id } = await params;
+  const prisma = getPrisma();
+  const preorder = await prisma.preorder.findUnique({ where: { id } });
+
+  if (!preorder) {
     return NextResponse.json(
-      { message: "Preorder not found" },
+      { success: false, message: "Preorder not found" },
       { status: 404 },
     );
   }
 
   const updated = await prisma.preorder.update({
-    where: { id: params.id },
-    data: {
-      status: !existing.status,
-    },
+    where: { id },
+    data: { status: !preorder.status },
   });
 
-  return NextResponse.json(updated);
+  return NextResponse.json({ success: true, data: updated });
 }
-// src/app/api/preorders/status/[id]/route.ts
