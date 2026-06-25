@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+
 
 import { Button } from "@/src/components/ui/Button";
 import { Field } from "@/src/components/ui/Field";
@@ -43,23 +44,22 @@ export function PreorderFormPage({ preorder }: PreorderFormPageProps) {
     };
   });
 
-  // No effect needed: values are initialized from the current `preorder` prop.
-  // (Avoids lint warnings about setState in effects.)
 
 
 
   const form = usePreorderForm(preorder?.id);
 
   function update<Value extends keyof typeof values>(
-
     key: Value,
     value: (typeof values)[Value],
   ) {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+
 
     const payload: PreorderPayload = {
       name: values.name,
@@ -71,18 +71,12 @@ export function PreorderFormPage({ preorder }: PreorderFormPageProps) {
     };
 
     void form.save(payload);
-    // Ensure the list refreshes even if navigation caching prevents a full re-render
-    // (usePreorders does client-side fetching).
-    try {
-      window.location.href = "/";
-    } catch {
-      // ignore
-    }
   }
-console.log(preorder);
-console.log(values);
+
+
   return (
     <main className="min-h-screen pt-6.25" style={{ backgroundColor: colors.page }}>
+
       <form
         key={preorder?.id ?? "new"}
         onSubmit={handleSubmit}
