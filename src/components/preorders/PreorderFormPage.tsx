@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 
 import { Button } from "@/src/components/ui/Button";
 import { Field } from "@/src/components/ui/Field";
@@ -30,18 +30,6 @@ type PreorderFormPageProps = {
 
 
 export function PreorderFormPage({ preorder }: PreorderFormPageProps) {
-  useEffect(() => {
-    if (!preorder) return;
-
-    setValues({
-      name: preorder.name,
-      products: preorder.products,
-      preorderWhen: preorder.preorderWhen,
-      startsAt: toInputDateTime(preorder.startsAt),
-      endsAt: preorder.endsAt ? toInputDateTime(preorder.endsAt) : "",
-      status: preorder.status,
-    });
-  }, [preorder]);
   const [values, setValues] = useState(() => {
     if (!preorder) return emptyValues;
 
@@ -54,6 +42,9 @@ export function PreorderFormPage({ preorder }: PreorderFormPageProps) {
       status: preorder.status,
     };
   });
+
+  // No effect needed: values are initialized from the current `preorder` prop.
+  // (Avoids lint warnings about setState in effects.)
 
 
 
@@ -80,6 +71,13 @@ export function PreorderFormPage({ preorder }: PreorderFormPageProps) {
     };
 
     void form.save(payload);
+    // Ensure the list refreshes even if navigation caching prevents a full re-render
+    // (usePreorders does client-side fetching).
+    try {
+      window.location.href = "/";
+    } catch {
+      // ignore
+    }
   }
 console.log(preorder);
 console.log(values);

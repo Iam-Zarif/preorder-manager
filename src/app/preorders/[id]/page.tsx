@@ -9,7 +9,7 @@ type EditPreorderPageProps = {
 
 export default async function EditPreorderPage({ params }: EditPreorderPageProps) {
   const { id } = await params;
-  const preorder = getPrisma().preorder.findUnique({
+  const preorder = await getPrisma().preorder.findUnique({
     where: { id },
   });
 
