@@ -54,6 +54,19 @@ export function usePreorders() {
     }
   }, [query]);
 
+  const refreshWithoutFullTableLoading = useCallback(async () => {
+    setMessage("");
+
+    try {
+      const response = await getPreorders(query);
+      setItems(response.data);
+      setMeta(response.meta);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to update");
+    }
+  }, [query]);
+
+
   useEffect(() => {
     queueMicrotask(() => {
       void load();
@@ -78,12 +91,26 @@ export function usePreorders() {
     setPage,
     refresh: load,
     remove: async (id: string) => {
-      await deletePreorder(id);
-      await load();
+      setMessage("");
+      try {
+        await deletePreorder(id);
+        await refreshWithoutFullTableLoading();
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Unable to delete");
+        await refreshWithoutFullTableLoading();
+      }
     },
     toggleStatus: async (id: string) => {
-      await togglePreorderStatus(id);
-      await load();
+      setMessage("");
+      try {
+        await togglePreorderStatus(id);
+        await load();
+      } catch (error) {
+        setMessage(
+          error instanceof Error ? error.message : "Unable to update status",
+        );
+        await load();
+      }
     },
   };
 }

@@ -50,7 +50,17 @@ export async function PUT(req: Request, { params }: Context) {
 
 export async function DELETE(_req: Request, { params }: Context) {
   const { id } = await params;
-  getPrisma().preorder.delete({ where: { id } });
+  const prisma = getPrisma();
 
-  return NextResponse.json({ success: true });
+  try {
+    await prisma.preorder.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Unable to delete preorder" },
+      { status: 500 },
+    );
+  }
 }
+
+
