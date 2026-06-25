@@ -8,7 +8,9 @@ type Context = {
 
 export async function GET(_req: Request, { params }: Context) {
   const { id } = await params;
-  const preorder = await getPrisma().preorder.findUnique({ where: { id } });
+  const preorder = getPrisma().preorder.findUnique({
+    where: { id },
+  });
 
   if (!preorder) {
     return NextResponse.json(
@@ -31,7 +33,7 @@ export async function PUT(req: Request, { params }: Context) {
     );
   }
 
-  const updated = await getPrisma().preorder.update({
+  const updated = getPrisma().preorder.update({
     where: { id },
     data: {
       name: body.data.name,
@@ -48,7 +50,7 @@ export async function PUT(req: Request, { params }: Context) {
 
 export async function DELETE(_req: Request, { params }: Context) {
   const { id } = await params;
-  await getPrisma().preorder.delete({ where: { id } });
+  getPrisma().preorder.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }

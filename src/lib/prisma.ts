@@ -4,15 +4,13 @@ import "dotenv/config";
 
 let prismaInstance: PrismaClient | null = null;
 
+function getConnectionString() {
+  return process.env.DATABASE_URL ?? "file:./dev.db";
+}
+
 export function getPrisma() {
   if (!prismaInstance) {
-    const connectionString = process.env.DATABASE_URL;
-
-    if (!connectionString) {
-      throw new Error("DATABASE_URL is not configured");
-    }
-
-    const adapter = new PrismaBetterSqlite3({ url: connectionString });
+    const adapter = new PrismaBetterSqlite3({ url: getConnectionString() });
     prismaInstance = new PrismaClient({ adapter });
   }
 

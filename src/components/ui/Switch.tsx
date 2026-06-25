@@ -14,15 +14,15 @@ export function Switch({ checked, disabled, label, onChange }: SwitchProps) {
       type="button"
       onClick={onChange}
       className={[
-"relative cursor-pointer h-[20px] w-[32px] rounded-[6px] transition",
+"relative cursor-pointer h-5 w-8 rounded-md transition",
         checked ? "bg-[#202124]" : "bg-[#e1e4e8]",
         disabled ? "cursor-not-allowed opacity-70" : "",
       ].join(" ")}
     >
       <span
         className={[
-          "absolute top-[4px] h-[12px] w-[12px] rounded-[3px] bg-white transition",
-          checked ? "left-[16px]" : "left-[4px]",
+          "absolute top-1 h-3 w-3 rounded-[3px] bg-white transition",
+          checked ? "left-4" : "left-1",
         ].join(" ")}
       />
     </button>
